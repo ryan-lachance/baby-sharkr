@@ -3,7 +3,8 @@ from discord.ext import commands
 import re
 
 # List of planned features
-# Group payment reminder
+# Option to split money owed by number of people
+# Show the people who haven't payed and have payed
 
 
 client = commands.Bot(command_prefix=".sharkr ", intents=discord.Intents.all())
