@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import time
+import re
 
 # List of planned features
 # Group payment reminder
@@ -96,11 +96,11 @@ async def owes(ctx, loanName=None, debtee=None, amount_owed=None, *, debtors):
         message = await ctx.send(message_text)
         message_id = message.id
         await ctx.send("Please do not delete the above message, it will be used to manage the loan.")
-        message_text += "\nPlease enter '.sharkr payed " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have payed the loan or if you believe you are recieving this message by mistake."
 
 
-        debtor_role_name = loanName + " Debtor " + str(message_id)
-        debtee_role_name = loanName + " Debtee " + str(message_id)
+
+        debtor_role_name = loanName + " Debtor " + str(message_id) + " .sharkr"
+        debtee_role_name = loanName + " Debtee " + str(message_id) + " .sharkr"
         
 
         await guild.create_role(name= debtor_role_name)
@@ -114,6 +114,7 @@ async def owes(ctx, loanName=None, debtee=None, amount_owed=None, *, debtors):
                 member = guild.get_member_named(debtor)
                 await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
                 await member.send(message_text)
+                await member.send("Please enter '.sharkr payed " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have payed the loan or if you believe you are recieving this message by mistake.")
             except:
                 print("Could not find member " + debtor + ". Ensure their name was typed correctly.")
     except Exception as error:
@@ -139,6 +140,22 @@ async def payed(ctx, message_id, guild_id):
 
     #Add logic for when no more debtors remain.
   
+@client.command() 
+async def remind(ctx, role_name):
+    guild = ctx.guild
+    role_id = re.sub("\D", "", role_name)
+    role = guild.get_role(int(role_id))
+
+    message_id = int((role.name.split(" "))[2])
+    bot_message = ""
+    for channel in guild.text_channels:
+        if channel.fetch_message(message_id) != None:
+            bot_message = await channel.fetch_message(message_id)
 
 
-client.run("Insert Bot Token Here") 
+    
+    for member in role.members:
+        await member.send(bot_message.content)
+        await member.send("Please enter '.sharkr payed " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have payed the loan or if you believe you are recieving this message by mistake.")
+
+client.run("") 
