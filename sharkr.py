@@ -7,7 +7,7 @@ import traceback
 
 # List of planned features
 # Option to split money owed by number of people
-# Show the people who haven't payed and have payed
+# Command to show details of all other commands
 
 
 client = commands.Bot(command_prefix=".sharkr ", intents=discord.Intents.all())
@@ -95,9 +95,14 @@ async def owesme(ctx, loanName=None, amount_owed=None, *, debtors=None):
         debtorList = debtors.split(" ")
         for debtor in debtorList:
             try:
-                member = guild.get_member(processUserId(debtor))
-                await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
-                await member.send(message_text)
+                if guild.get_role(processUserId(debtor)) != None:
+                   for member in guild.get_role(processUserId(debtor)).members:
+                    await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
+                    await member.send(message_text)      
+                else:
+                    member = guild.get_member(processUserId(debtor))
+                    await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
+                    await member.send(message_text)
             except Exception as e:
                 ctx.send("Could not find member " + debtor + ". Ensure their name was typed correctly.")
                 traceback.print_exception(type(e), e, e.__traceback__)
@@ -122,7 +127,6 @@ async def owes(ctx, loanName=None, debtee=None, amount_owed=None, *, debtors=Non
     try:
         guild = ctx.guild
         try:
-            print(debtee)
             debtee = guild.get_member(processUserId(debtee))
         except Exception as e:
             await ctx.send("Error: Could not find debtee.")
@@ -157,9 +161,14 @@ async def owes(ctx, loanName=None, debtee=None, amount_owed=None, *, debtors=Non
         debtorList = debtors.split(" ")
         for debtor in debtorList:
             try:
-                member = guild.get_member(processUserId(debtor))
-                await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
-                await member.send(message_text)
+                if guild.get_role(processUserId(debtor)) != None:
+                   for member in guild.get_role(processUserId(debtor)).members:
+                    await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
+                    await member.send(message_text)      
+                else:
+                    member = guild.get_member(processUserId(debtor))
+                    await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
+                    await member.send(message_text)
             except Exception as e:
                 ctx.send("Could not find member " + debtor + ". Ensure their name was typed correctly.")
                 traceback.print_exception(type(e), e, e.__traceback__)
@@ -190,7 +199,7 @@ async def payed(ctx, message_id=None, guild_id=None):
         valid = False
         
         for i in range (len(roles)):
-            if message_id in roles[i].name and "debtor" in roles[i].name:
+            if message_id in roles[i].name and "Debtor" in roles[i].name:
                 valid = True
                 role = roles[i]
                 try:
@@ -214,10 +223,10 @@ async def payed(ctx, message_id=None, guild_id=None):
                 for i in range (len(roles)):
                     if message_id in roles[i].name:
                         try:
-                            if 'debtee' in roles[i].name:
-                                debtee = await discord.utils.get(guild.roles, name = roles[i].name)
+                            if 'Debtee' in roles[i].name:
+                                debtee = discord.utils.get(guild.roles, name = roles[i].name)
                             else:
-                                debtor = await discord.utils.get(guild.roles, name = roles[i].name)
+                                debtor = discord.utils.get(guild.roles, name = roles[i].name)
                         except Exception as e:
                             await ctx.send("Error: Could not find role.")
                             traceback.print_exception(type(e), e, e.__traceback__)
@@ -247,6 +256,8 @@ async def remind(ctx, loan_name=None): # Remind outstanding debtors of their loa
         return
     try:
         guild = ctx.guild
+        role_id = None
+        role = None
         try:
             role_id = re.sub("\D", "", loan_name)
             role = guild.get_role(int(role_id))
@@ -256,14 +267,18 @@ async def remind(ctx, loan_name=None): # Remind outstanding debtors of their loa
 
         bot_message = ""
 
+        if "Debtee" in role.name:
+            new_role_name = role.name.replace("Debtee", "Debtor")
+            role = discord.utils.get(guild.roles,name=new_role_name)
 
-        if "debtor" in role.name:
+
+        if "Debtor" in role.name:
             try:
                 message_id = int((role.name.split(" "))[2])
                 valid = False
 
-                for i in guild.get_member(ctx.author).roles:
-                    if message_id in i.name and 'debtee' in i.name:
+                for i in guild.get_member(ctx.author.id).roles:
+                    if str(message_id) in i.name and 'Debtee' in i.name:
                         valid = True
                 
                 if valid == False:
@@ -273,7 +288,7 @@ async def remind(ctx, loan_name=None): # Remind outstanding debtors of their loa
 
 
                 for channel in guild.text_channels:
-                    if channel.fetch_message(message_id) != None:
+                    if await channel.fetch_message(message_id) != None:
                         bot_message = await channel.fetch_message(message_id)
             except Exception as e:
                 await ctx.send("Error: Could not find loan message. It may have been deleted.")
@@ -309,41 +324,47 @@ async def clear(ctx, loan_name=None): # Delete a loan
             await ctx.send("Error: Could not find role.")
             traceback.print_exception(type(e), e, e.__traceback__)
 
-        if "debtor" in role.name:
+
+        if "Debtee" in role.name:
+            new_role_name = role.name.replace("Debtee", "Debtor")
+            role = discord.utils.get(guild.roles,name=new_role_name)
+
+            
+        if "Debtor" in role.name:
             try:
                 message_id = int((role.name.split(" "))[2])
                 valid = False
 
-                for i in guild.get_member(ctx.author).roles:
-                    if message_id in i.name and 'debtee' in i.name:
+                for i in guild.get_member(ctx.author.id).roles:
+                    if str(message_id) in i.name and 'Debtee' in i.name:
                         valid = True
                 
                 if valid == False:
-                    await ctx.send("Error: You are not the debtee of this loan, so you cannot send a reminder for it.")
+                    await ctx.send("Error: You are not the debtee of this loan, so you cannot clear it.")
                     return
                 else:
                     roles = guild.roles
                     debtee=None
                     debtor=None
-                    if len(role.members)== 0:
-                        for i in range (len(roles)):
-                            if message_id in roles[i].name:
-                                try:
-                                    if 'debtee' in roles[i].name:
-                                        debtee = await discord.utils.get(guild.roles, name = roles[i].name)
-                                    else:
-                                        debtor = await discord.utils.get(guild.roles, name = roles[i].name)
-                                except Exception as e:
-                                    await ctx.send("Error: Could not find role.")
-                                    traceback.print_exception(type(e), e, e.__traceback__)
-                        
-                        try:
-                            await debtee.delete()
-                            await debtor.delete()
-                            await ctx.send("Loan has been cleared")
-                        except Exception as e:
-                            await ctx.send("Error: Could not delete role.")
-                            traceback.print_exception(type(e), e, e.__traceback__)
+                
+                    for i in range (len(roles)):
+                        if str(message_id) in roles[i].name:
+                            try:
+                                if 'Debtee' in roles[i].name:
+                                    debtee = discord.utils.get(guild.roles, name = roles[i].name)
+                                else:
+                                    debtor = discord.utils.get(guild.roles, name = roles[i].name)
+                            except Exception as e:
+                                await ctx.send("Error: Could not find role.")
+                                traceback.print_exception(type(e), e, e.__traceback__)
+                    
+                    try:
+                        await debtee.delete()
+                        await debtor.delete()
+                        await ctx.send("Loan has been cleared")
+                    except Exception as e:
+                        await ctx.send("Error: Could not delete role.")
+                        traceback.print_exception(type(e), e, e.__traceback__)
 
             except Exception as e:
                 await ctx.send("Error: Could not find loan message. It may have been deleted.")
@@ -355,11 +376,42 @@ async def clear(ctx, loan_name=None): # Delete a loan
         await ctx.send("Error: Sorry, something unexpected went wrong.")
         traceback.print_exception(type(e), e, e.__traceback__)
 
+@client.command()
+async def outstanding(ctx, loan_name=None): # See outstanding debtors
+    if loan_name == None:
+        await ctx.send("Error: You must provide a loan name.")
+        return
+    try:
+        guild = ctx.guild
+        try:
+            role_id = re.sub("\D", "", loan_name)
+            role = guild.get_role(int(role_id))
+        except Exception as e:
+            await ctx.send("Error: Could not find role.")
+            traceback.print_exception(type(e), e, e.__traceback__)
+
+
+        if "Debtee" in role.name:
+            new_role_name = role.name.replace("Debtee", "Debtor")
+            role = discord.utils.get(guild.roles,name=new_role_name)
+
+            
+        if "Debtor" in role.name:
+            lst = ""
+            for member in role.members:
+                lst += member.name + ", "
+            await ctx.send("The oustanding debtors are: " + lst)
+
+    except Exception as e:
+        await ctx.send("Error: Sorry, something unexpected went wrong.")
+        traceback.print_exception(type(e), e, e.__traceback__)
+
 
 def processUserId(user_id):
     user_id = user_id.replace("<", "")
     user_id = user_id.replace(">", "")
     user_id = user_id.replace("@", "")
+    user_id = user_id.replace("&", "")
     user_id = int(user_id)
     return user_id
 
