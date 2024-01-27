@@ -7,14 +7,13 @@ import traceback
 
 # List of planned features
 # Option to split money owed by number of people
-# Command to show details of all other commands
 
 
-client = commands.Bot(command_prefix=".sharkr ", intents=discord.Intents.all())
+client = commands.Bot(command_prefix=".sharkr ", intents=discord.Intents.all(), help_command=None)
 
 @client.event
 async def on_ready():
-    print("Sharkr is active.")
+    print("Sharkr is active. Enter '.sharkr help' for a list of commands.")
 
 @client.event # When someone becomes interested in an event, they are given that events role.
 async def on_scheduled_event_user_add(event,user):
@@ -46,6 +45,11 @@ async def on_scheduled_event_delete(event):
     role = discord.utils.get(guild.roles,name=event.name)
     await role.delete()
     print("deleted")
+
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound): # or discord.ext.commands.errors.CommandNotFound as you wrote
+        await ctx.send("Unknown command.")
 
 @client.command() #Adds debtor role to those who owe money
 async def owesme(ctx, loanName=None, amount_owed=None, *, debtors=None):
@@ -414,6 +418,33 @@ def processUserId(user_id):
     user_id = user_id.replace("&", "")
     user_id = int(user_id)
     return user_id
+
+@client.command()
+async def help(ctx, commandName=None): 
+    if commandName == None:
+        send = """Please see the commands below. Enter '.sharkr help commandName' to get the information on that command.
+        owesme: Create a loan with you as the debtee.
+        owes: Create a loan.
+        remind: Remind debtors to pay their debt.
+        clear: Delete a debt you are owed.
+        outstanding: List debtors who have not payed back a given loan.
+        """
+        await ctx.send(send)
+    elif commandName == 'owesme':
+        await ctx.send("Enter '.sharkr loanName amountOwed debtors' to create a new loan lent by you.")
+        await ctx.send("Replace loanName with whatever you wish to name the debt, one word. Replace amountOwed with a currency value, one word. Replace debtors with a list of @users, seperated by a space.")
+    elif commandName == 'owes':
+        await ctx.send("Enter '.sharkr loanName debtee amountOwed debtors' to create a new loan lent by debtee.")
+        await ctx.send("Replace loanName with whatever you wish to name the debt, one word. Replace debtee with @loanGiverUsername. Replace amountOwed with a currency value, one word. Replace debtors with a list of @users, seperated by a space.")
+    elif commandName == 'remind':
+        await ctx.send("Enter '.sharkr remind @loanRole' to remind all users yet to pay this loan to pay.\nReplace '@loanRole' with the desired loan role, @ included.")
+    elif commandName == 'clear':
+        await ctx.send("Enter '.sharkr clear @loanRole' to delete this debt.\nReplace '@loanRole' with the desired loan role, @ included.")
+    elif commandName == 'outstanding':
+        await ctx.send("Enter '.sharkr outstanding @loanRole' to get all users yet to pay this loan.\nReplace '@loanRole' with the desired loan role, @ included.")
+
+
+
 
 
 client.run("")
