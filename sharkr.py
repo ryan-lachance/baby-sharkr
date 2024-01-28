@@ -77,7 +77,7 @@ async def owesme(ctx, loanName=None, amount_owed=None, *, debtors=None):
         message = await ctx.send(message_text)
         message_id = message.id
         await ctx.send("Please do not delete the above message, it will be used to manage the loan.")
-        message_text += "\nPlease enter '.sharkr payed " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have payed the loan or if you believe you are recieving this message by mistake."
+        message_text += "\nPlease enter '.sharkr paid " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have paid the loan or if you believe you are recieving this message by mistake."
 
 
         debtor_role_name = loanName + " Debtor " + str(message_id)
@@ -143,7 +143,7 @@ async def owes(ctx, loanName=None, debtee=None, amount_owed=None, *, debtors=Non
         message = await ctx.send(message_text)
         message_id = message.id
         await ctx.send("Please do not delete the above message, it will be used to manage the loan.")
-        message_text += "\nPlease enter '.sharkr payed " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have payed the loan or if you believe you are recieving this message by mistake."
+        message_text += "\nPlease enter '.sharkr paid " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have paid the loan or if you believe you are recieving this message by mistake."
 
 
         debtor_role_name = loanName + " Debtor " + str(message_id)
@@ -181,7 +181,7 @@ async def owes(ctx, loanName=None, debtee=None, amount_owed=None, *, debtors=Non
         traceback.print_exception(type(e), e, e.__traceback__)
 
 @client.command() #Removes appropriate debtor role.
-async def payed(ctx, message_id=None, guild_id=None):
+async def paid(ctx, message_id=None, guild_id=None):
     #await ctx.send("Error: ")
     if message_id == None or guild_id==None:
         await ctx.send("Error: You are missing arguments. Please ensure your enter the command exactly as it was sent to you.")
@@ -236,7 +236,7 @@ async def payed(ctx, message_id=None, guild_id=None):
                             traceback.print_exception(type(e), e, e.__traceback__)
                 
                 try:
-                    await debtee.members[0].send("All debtors of your loan " + debtee.name + " have payed.")
+                    await debtee.members[0].send("All debtors of your loan " + debtee.name + " have paid.")
                 except Exception as e:
                     await ctx.send("Error: Could not find role.")
                     traceback.print_exception(type(e), e, e.__traceback__)
@@ -292,8 +292,12 @@ async def remind(ctx, loan_name=None): # Remind outstanding debtors of their loa
 
 
                 for channel in guild.text_channels:
-                    if await channel.fetch_message(message_id) != None:
-                        bot_message = await channel.fetch_message(message_id)
+                    try:
+
+                        if await channel.fetch_message(message_id) != None:
+                            bot_message = await channel.fetch_message(message_id)
+                    except:
+                        pass
             except Exception as e:
                 await ctx.send("Error: Could not find loan message. It may have been deleted.")
                 traceback.print_exception(type(e), e, e.__traceback__)
@@ -305,8 +309,8 @@ async def remind(ctx, loan_name=None): # Remind outstanding debtors of their loa
         
         for member in role.members:
             try:
-                await member.send(bot_message.content)
-                await member.send("Please enter '.sharkr payed " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have payed the loan or if you believe you are recieving this message by mistake.")
+                await member.send(bot_message)
+                await member.send("Please enter '.sharkr paid " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have paid the loan or if you believe you are recieving this message by mistake.")
             except Exception as e:
                 await ctx.send("Error: Could not find member.")
                 traceback.print_exception(type(e), e, e.__traceback__)
@@ -427,14 +431,14 @@ async def help(ctx, commandName=None):
         owes: Create a loan.
         remind: Remind debtors to pay their debt.
         clear: Delete a debt you are owed.
-        outstanding: List debtors who have not payed back a given loan.
+        outstanding: List debtors who have not paid back a given loan.
         """
         await ctx.send(send)
     elif commandName == 'owesme':
-        await ctx.send("Enter '.sharkr loanName amountOwed debtors' to create a new loan lent by you.")
+        await ctx.send("Enter '.sharkr owesme loanName amountOwed debtors' to create a new loan lent by you.")
         await ctx.send("Replace loanName with whatever you wish to name the debt, one word. Replace amountOwed with a currency value, one word. Replace debtors with a list of @users, seperated by a space.")
     elif commandName == 'owes':
-        await ctx.send("Enter '.sharkr loanName debtee amountOwed debtors' to create a new loan lent by debtee.")
+        await ctx.send("Enter '.sharkr owes loanName debtee amountOwed debtors' to create a new loan lent by debtee.")
         await ctx.send("Replace loanName with whatever you wish to name the debt, one word. Replace debtee with @loanGiverUsername. Replace amountOwed with a currency value, one word. Replace debtors with a list of @users, seperated by a space.")
     elif commandName == 'remind':
         await ctx.send("Enter '.sharkr remind @loanRole' to remind all users yet to pay this loan to pay.\nReplace '@loanRole' with the desired loan role, @ included.")
