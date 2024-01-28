@@ -8,5 +8,5 @@ While similar payment apps exist, half the battle is convincing your friends to 
 
 ### How to use Sharkr
 Use this link to add Sharkr to your server: \n
-https://discord.com/api/oauth2/authorize?client_id=1190000359117172849&permissions=8&scope=bot+applications.commands\n
+https://discord.com/api/oauth2/authorize?client_id=1190000359117172849&permissions=8&scope=bot+applications.commands
 Use '.sharkr help' for a list of commands.
