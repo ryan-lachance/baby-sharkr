@@ -296,6 +296,7 @@ async def remind(ctx, loan_name=None): # Remind outstanding debtors of their loa
 
                         if await channel.fetch_message(message_id) != None:
                             bot_message = await channel.fetch_message(message_id)
+                            bot_message = bot_message.content
                     except:
                         pass
             except Exception as e:
