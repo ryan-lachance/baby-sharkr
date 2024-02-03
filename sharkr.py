@@ -77,8 +77,8 @@ async def owesme(ctx, loanName=None, amount_owed=None, *, debtors=None):
         message = await ctx.send(message_text)
         message_id = message.id
         await ctx.send("Please do not delete the above message, it will be used to manage the loan.")
-        message_text += "\nPlease enter '.sharkr paid " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have paid the loan or if you believe you are recieving this message by mistake."
-
+        message_text += "\nPlease enter the message below once you have paid the loan or if you believe you are recieving this message by mistake."
+        repay_text = '.sharkr paid ' + str(message_id) + " " + str(guild.id)
 
         debtor_role_name = loanName + " Debtor " + str(message_id)
         debtee_role_name = loanName + " Debtee " + str(message_id)
@@ -102,11 +102,13 @@ async def owesme(ctx, loanName=None, amount_owed=None, *, debtors=None):
                 if guild.get_role(processUserId(debtor)) != None:
                    for member in guild.get_role(processUserId(debtor)).members:
                     await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
-                    await member.send(message_text)      
+                    await member.send(message_text)
+                    await member.send(repay_text)      
                 else:
                     member = guild.get_member(processUserId(debtor))
                     await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
                     await member.send(message_text)
+                    await member.send(repay_text)
             except Exception as e:
                 ctx.send("Could not find member " + debtor + ". Ensure their name was typed correctly.")
                 traceback.print_exception(type(e), e, e.__traceback__)
@@ -143,8 +145,8 @@ async def owes(ctx, loanName=None, debtee=None, amount_owed=None, *, debtors=Non
         message = await ctx.send(message_text)
         message_id = message.id
         await ctx.send("Please do not delete the above message, it will be used to manage the loan.")
-        message_text += "\nPlease enter '.sharkr paid " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have paid the loan or if you believe you are recieving this message by mistake."
-
+        message_text += "\nPlease enter the message below once you have paid the loan or if you believe you are recieving this message by mistake."
+        repay_text = '.sharkr paid ' + str(message_id) + " " + str(guild.id)
 
         debtor_role_name = loanName + " Debtor " + str(message_id)
         debtee_role_name = loanName + " Debtee " + str(message_id)
@@ -169,10 +171,12 @@ async def owes(ctx, loanName=None, debtee=None, amount_owed=None, *, debtors=Non
                    for member in guild.get_role(processUserId(debtor)).members:
                     await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
                     await member.send(message_text)      
+                    await member.send(repay_text)
                 else:
                     member = guild.get_member(processUserId(debtor))
                     await member.add_roles(discord.utils.get(guild.roles, name = debtor_role_name))
                     await member.send(message_text)
+                    await member.send(repay_text)
             except Exception as e:
                 ctx.send("Could not find member " + debtor + ". Ensure their name was typed correctly.")
                 traceback.print_exception(type(e), e, e.__traceback__)
@@ -307,11 +311,13 @@ async def remind(ctx, loan_name=None): # Remind outstanding debtors of their loa
             return
 
 
-        
+        bot_message += "\nPlease enter the message below once you have paid the loan or if you believe you are recieving this message by mistake."
+        repay_text = '.sharkr paid ' + str(message_id) + " " + str(guild.id)
+
         for member in role.members:
             try:
                 await member.send(bot_message)
-                await member.send("Please enter '.sharkr paid " + str(message_id) + " " + str(guild.id) + "', without the quotation marks, once you have paid the loan or if you believe you are recieving this message by mistake.")
+                await member.send(repay_text)
             except Exception as e:
                 await ctx.send("Error: Could not find member.")
                 traceback.print_exception(type(e), e, e.__traceback__)
